@@ -2,6 +2,8 @@
 A Django-based server that handles data collection and grading requests for the Bodhitree platform. The project consists of two main applications: Datacollector and TABuddy, which handle data storage and grading tasks respectively.
 ## Project Structure
 Bodhitree_AI_Server/
+.
+├──...
 ├── .dvc/                      # DVC (Data Version Control) configuration
 ├── Bodhitree_AI_Server/       # Main Django project directory
 │   ├── __init__.py
@@ -46,6 +48,7 @@ Bodhitree_AI_Server/
 ├── environment.yml
 ├── manage.py
 └── packages_list.txt
+├── ...
 ## Applications
 ### Datacollector
 
