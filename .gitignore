@@ -13,7 +13,10 @@ base_models/mongodb
 ..bfg-report
 .git.bak
 mongodb_data
-retraining_models/.gitkeep
+
+retraining_models/checkpoint-5
+retraining_models/model_20241220_200428
+retraining_models/model_20241220_211206
 a.py
 model.cache
 bfg-1.13.0.jar
