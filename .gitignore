@@ -58,7 +58,6 @@ Datacollector/services/mlruns/*
 Datacollector/services/wandb/*
 Datacollector/services/dataset_create_backup.py
 Datacollector/services/test_inference.py
-Datacollector/utils/Retraining_datasets/*
 Datacollector/wandb
 Datacollector/services/mlruns
 retraining_models/*
