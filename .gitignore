@@ -13,7 +13,7 @@ base_models/mongodb
 ..bfg-report
 .git.bak
 mongodb_data
-retraining_models/*
+retraining_models/.gitkeep
 a.py
 model.cache
 bfg-1.13.0.jar
@@ -64,6 +64,5 @@ retraining_models/*
 TABuddy/migrations/*
 TABuddy/services/__pycache__
 wandb/*
-TABuddy/utils/inference_model/*
 TABuddy/utils/temp_dir
 TABuddy/services/__init__.py
