@@ -2,53 +2,52 @@
 A Django-based server that handles data collection and grading requests for the Bodhitree platform. The project consists of two main applications: Datacollector and TABuddy, which handle data storage and grading tasks respectively.
 ## Project Structure
 Bodhitree_AI_Server/
-.
-├──...
-├── .dvc/                      # DVC (Data Version Control) configuration
-├── Bodhitree_AI_Server/       # Main Django project directory
-│   ├── __init__.py
-│   ├── asgi.py               # ASGI configuration
-│   ├── celery.py            # Celery configuration for async tasks
-│   ├── settings.py          # Django settings
-│   ├── urls.py              # Main URL configuration
-│   └── wsgi.py              # WSGI configuration
-├── Datacollector/            # App for data collection and retraining
-│   ├── services/            # Retraining and evaluation modules
-│   ├── utils/               # Utility functions and resources
-│   │   ├── prompts/        # System and task prompts
-│   │   ├── retraining_datasets/  # Dataset files (train, test, eval)
-│   │   └── finetuning_models/    # Previous finetuned models
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── exp.py
-│   ├── models.py
-│   ├── tasks.py            # Asynchronous task definitions
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── TABuddy/                 # App for grading requests
-│   ├── services/           # Inference task related scripts
-│   ├── utils/              # Inference models and system prompts
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── tasks.py           # Async query processing tasks
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── retraining_models/      # Storage for retrained models
-├── .dvcignore
-├── .gitignore
-├── Dockerfile
-├── Dockerfile.mlflow
-├── docker-compose.yml
-├── environment.yml
-├── manage.py
-└── packages_list.txt
-├── ...
+
+    ├── .dvc/                      # DVC (Data Version Control) configuration
+    ├── Bodhitree_AI_Server/       # Main Django project directory
+    │   ├── __init__.py
+    │   ├── asgi.py               # ASGI configuration
+    │   ├── celery.py            # Celery configuration for async tasks
+    │   ├── settings.py          # Django settings
+    │   ├── urls.py              # Main URL configuration
+    │   └── wsgi.py              # WSGI configuration
+    ├── Datacollector/            # App for data collection and retraining
+    │   ├── services/            # Retraining and evaluation modules
+    │   ├── utils/               # Utility functions and resources
+    │   │   ├── prompts/        # System and task prompts
+    │   │   ├── retraining_datasets/  # Dataset files (train, test, eval)
+    │   │   └── finetuning_models/    # Previous finetuned models
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── exp.py
+    │   ├── models.py
+    │   ├── tasks.py            # Asynchronous task definitions
+    │   ├── tests.py
+    │   ├── urls.py
+    │   └── views.py
+    ├── TABuddy/                 # App for grading requests
+    │   ├── services/           # Inference task related scripts
+    │   ├── utils/              # Inference models and system prompts
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── models.py
+    │   ├── serializers.py
+    │   ├── tasks.py           # Async query processing tasks
+    │   ├── tests.py
+    │   ├── urls.py
+    │   └── views.py
+    ├── retraining_models/      # Storage for retrained models
+    ├── .dvcignore
+    ├── .gitignore
+    ├── Dockerfile
+    ├── Dockerfile.mlflow
+    ├── docker-compose.yml
+    ├── environment.yml
+    ├── manage.py
+    └── packages_list.txt
+
 ## Applications
 ### Datacollector
 
