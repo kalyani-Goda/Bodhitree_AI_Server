@@ -136,7 +136,7 @@ def get_dpo_dataset(
         rejected_responses = []
         for option in options.keys():
             if option != original_grade:
-                # rejected_response = f'The correct answer is {option}. {options[option]} </s>'
+                # rejected_response other than the correct grade allotted by TA
                 rejected_response = (
                     """{"answer" : """
                     + f'''"{option}. {options[option]}"'''
@@ -145,6 +145,7 @@ def get_dpo_dataset(
                 rejected_responses.append(rejected_response)
 
         student_code = codes[student_id]
+        # creating user prompt with context, student_code, task, options
         lora_prompts[student_id] = create_dpo_prompt(
             context, student_code, task, options
         )
@@ -159,7 +160,7 @@ def get_dpo_dataset(
     test_set = {}
     prompts = {}
     target_grades = {}
-
+    # Split the data into train and test sets along with the prompts with choosen ad reject ratings for each student
     for idx, (key, value) in enumerate(lora_prompts.items()):
         prompt = format_user_prompt(lora_prompts[key], system_prompt)
         chosen_response = chosen[key]
@@ -274,26 +275,21 @@ def get_dpo_reasoning_dataset(
 
 def create_datasets(json_data):
 
-    # with open(json_file_path, 'r', encoding='utf-8') as json_file:
+    # Load the JSON data
     data = json.loads(json_data)
 
-    # system_prompt_file = "/home/iitb_admin_user/kalyani/Bodhitree_AI_Server/Datacollector/utils/prompts/dpo_sys_prompt.txt"
+    # extract the system prompt and task prompt from the settings file
     system_prompt_file = settings.SYSTEM_PROMPT
-    
-    # task_file = "/home/iitb_admin_user/kalyani/Bodhitree_AI_Server/Datacollector/utils/prompts/task.txt"
     task_file = settings.TASK_PROMPT
 
-    # Extract system prompt
+    # Read the system prompt and task prompt
     with open(system_prompt_file, "r") as f:
         system_prompt = f.read().strip()
     
     with open(task_file, "r") as f:
         task = f.read().strip()
 
-    # train_path = "/home/iitb_admin_user/kalyani/Bodhitree_AI_Server/Datacollector/utils/Retraining_datasets/train.jsonl"
-    # test_path = "/home/iitb_admin_user/kalyani/Bodhitree_AI_Server/Datacollector/utils/Retraining_datasets/test.jsonl"
-    # eval_path = "/home/iitb_admin_user/kalyani/Bodhitree_AI_Server/Datacollector/utils/Retraining_datasets/eval.jsonl"
-
+    # Create the dataset files
     train_path = settings.TRAIN_PATH
     test_path = settings.TEST_PATH
     eval_path = settings.EVAL_PATH
@@ -318,7 +314,7 @@ def create_datasets(json_data):
         original_grades = lab['grades']
         if(len(original_grades)==0) :
             continue
-        #original_reasonings = process_reasoning(lab_path)
+        
         # Repeat for all criteria
         test_points[labid] = {}
         for criterion in all_criteria.keys():
@@ -332,7 +328,7 @@ def create_datasets(json_data):
             # Format the string by replacing `{}` with `criterion_desc`
             llm_task = task.format(criterion_desc)
 
-        
+            # Create the train and test dpo datasets
             train_set, test_set = get_dpo_dataset(
                 context,
                 student_submissions,
@@ -357,7 +353,7 @@ def create_datasets(json_data):
     for train_data_point in train_points[-50:]:
         json.dump(train_data_point, eval_dataset_file)
         eval_dataset_file.write("\n")
-    print(test_points)
+    #print(test_points)
 
     for key, value in test_points.items():
         # Construct a new dictionary with only one key-value pair for each line

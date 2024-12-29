@@ -56,7 +56,6 @@ def extract_data():
         totalDataPoints += problem.totalDataPoints
         # Fetch The Problem Statement
         try:
-            # problem_id = int(input("Enter the ID of the problem you want to see: "))
             problem_id = problem.id  
             problem = Problem.objects.get(id=problem_id)
             problemStatement = problem.problem_statement
@@ -118,12 +117,13 @@ def extract_data():
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=1)
 def handle_retraining_process(self):
     try:
+        # Fetch the MLflow tarcking model name and the previous version models storing folder path from settings file
         model_name = settings.MODEL_NAME
         download_path = settings.DOWNLOAD_PATH
         # Step 1: Extract data and calculate data points
         data, untrained_problems, total_data_points = extract_data()
         
-        if total_data_points <= 12:
+        if total_data_points <= settings.THRESHOLD_DATA_POINTS:
             logger.error("Insufficient data points: {}".format(total_data_points))
             return "Insufficient data points"
 
@@ -136,7 +136,7 @@ def handle_retraining_process(self):
         # Step 3: Start retraining
         start_retraining(train_path, eval_path, test_path, model_name, download_path)
         
-        
+        # update or append the test dataset file with the new test data
         append_jsonl_files(test_path, settings.TESTDATASET_FILE_PATH)
 
 
@@ -155,7 +155,6 @@ def handle_retraining_process(self):
             problem.save()
             
         # Step 4: calculate the accuracy of the model after inference on the model with the test data
-        # metrics = inference(test_path, finetuned_model_path)
         mlfolw_inference(settings.EXPERIMENT_NAME, model_name, test_path, download_path)
         
         return "Retraining process completed successfully"

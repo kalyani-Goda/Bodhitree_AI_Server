@@ -73,36 +73,6 @@ def setup_mlflow_experiment(experiment_name):
         print(f"Error setting up MLflow experiment: {str(e)}")
         raise
 
-# def download_model_artifacts(model_name, download_path):
-#     client = MlflowClient()
-    
-#     # Retrieve the latest version of the model
-#     latest_versions = client.get_latest_versions(model_name, stages=["None"])
-#     if latest_versions:
-#         latest_version = latest_versions[0]  # Get the latest version object
-#         version = latest_version.version
-
-#         # Get model version info
-#         model_version = client.get_model_version(name=model_name, version=version)
-        
-#         # Get the run ID associated with this model version
-#         run_id = model_version.run_id
-        
-#         # Define the path where you want to save the artifacts
-#         local_dir = os.path.join(download_path, f"{model_name}_v{version}")
-#         os.makedirs(local_dir, exist_ok=True)
-        
-#         # Download the "model/checkpoints" folder artifact to the specified local directory
-#         client.download_artifacts(run_id, "model/checkpoints", local_dir)
-
-#         # Define the adapter directory path
-#         adapter_dir = os.path.join(local_dir, "model/checkpoints")
-#         print(f"Adapter directory is located at: {adapter_dir}")
-#     else:
-#         print(f"No latest version found for the model '{model_name}' in stage 'None'.")
-#         return "None"
-        
-#     return adapter_dir
 
 def download_model_artifacts(model_name, download_path):
     """
@@ -211,13 +181,14 @@ def initialize_model_and_tokenizer_dpo(
     return tokenizer, model
 
 
-# if __name__ == "__main__":
 
 def start_retraining(train_path, eval_path, test_path, model_name, download_path):
     
     # First set up the MLflow experiment
     setup_mlflow_experiment(settings.EXPERIMENT_NAME)
-    
+
+
+    # Download model artifacts that is the latest model if they exist from mlflow client
     adapter_path = download_model_artifacts(model_name, download_path)
 
     # Start a new MLflow run
@@ -312,9 +283,8 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
 
             model.config.use_cache = False
 
-            # Adding this to reduce eval time
-        # eval_dataset = eval_dataset.select(range(100))
-
+            
+            # Log the number of trainable parameters
             training_args = DPOConfig(
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
@@ -339,7 +309,7 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
                 beta=0.1,
             )
             
-
+            # lora config parameters
             peft_config = LoraConfig(
                 r= lora_r,
                 lora_alpha= lora_alpha,
@@ -359,7 +329,7 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
             print("Model Type:", type(model))
             print("Has Generate Method:", hasattr(model, 'generate'))
 
-
+            # Initialize the DPOTrainer
             dpo_trainer = DPOTrainer(
                 model,
                 ref_model=None,
@@ -368,12 +338,9 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
                 eval_dataset=eval_dataset,
                 tokenizer=tokenizer,
                 peft_config=peft_config,
-                # max_prompt_length=2048,
-                # max_length=1536,
-                # beta=0.1
             )
 
-            # Log configuration parameters
+            # Log configuration parameters into MLflow experiment
             mlflow.log_params({
                 "base_model": MODEL_DIRECTORY_MAP[model_size],
                 "max_prompt_length":2048,
@@ -383,7 +350,7 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
                 "num_train_epochs":1,
             })
 
-            # 6. train
+            # 6. start the training
             train_result = dpo_trainer.train()
 
             # Log training metrics
@@ -392,7 +359,7 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
                 "total_steps": train_result.global_step
             })
 
-            # Assuming `args.output_dir` is the base directory where you want to save the model
+            # output_dir is the base directory where to save the retrianed models
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
             timestamped_dir = os.path.join(output_dir, f"model_{current_time}")
 
@@ -463,7 +430,7 @@ def start_retraining(train_path, eval_path, test_path, model_name, download_path
             checkpoint_dir = os.path.join(timestamped_dir, "final_checkpoint")
             dpo_trainer.model.save_pretrained(checkpoint_dir)
 
-            # Log the checkpoint directory
+            # Log the checkpoint directory into mlflow as an artifact
             mlflow.log_artifacts(checkpoint_dir, "model/checkpoints")
 
             print(f"Training completed. Model saved in MLflow under run: {mlflow.active_run().info.run_id}")

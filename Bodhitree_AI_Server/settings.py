@@ -169,6 +169,8 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+#Thershold data points for the model retraining
+THRESHOLD_DATA_POINTS = os.getenv('THRESHOLD_DATA_POINTS', 1500)
 
 # Model and Data Paths - All relative to BASE_DIR
 MODEL_DIRECTORY_PATH = os.getenv('MODEL_DIRECTORY_PATH', str(BASE_DIR / 'base_models/CodeLlama-7b-Instruct-hf'))

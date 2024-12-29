@@ -15,9 +15,6 @@ torch.manual_seed(0)
 random.seed(0)
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-# MODEL_DIRECTORY_MAP = {
-#     "7b": "/home/iitb_admin_user/kalyani/base_models/CodeLlama-7b-Instruct-hf",
-# }
 
 MODEL_DIRECTORY_MAP = settings.MODEL_DIRECTORY_MAP
 
@@ -63,7 +60,7 @@ def generate_single_response(
     model, tokenizer, grading_prompt, max_length=1024, device="cuda:0"
 ):
     start_time = time.time()
-
+    # input tokenization
     inputs = tokenizer(
         grading_prompt,
         return_tensors="pt",
@@ -72,6 +69,7 @@ def generate_single_response(
         add_special_tokens=False,
     ).to(device)
 
+    # genrating the response from the model
     output = model.generate(
         **inputs,
         # attention_mask=inputs["attention_mask"],
@@ -118,7 +116,6 @@ def extract_llm_ratings(model_response):
             option = stripped_model_response[8]
         else:
             count += 1
-            # print(student_id, model_response)
 
     if not (already_extracted):
         try:
@@ -136,7 +133,6 @@ def extract_llm_ratings(model_response):
     diff = ord(option) - ord('A')
     if not (diff >= 0 and diff < 4):
         option = "A"
-        # print(student_id, model_response[:20])
         pass
     
     return option
@@ -208,11 +204,13 @@ def promote_to_challenger(model_name, best_version):
 def evaluate_and_promote_best_model_for_experiment(model_name, experiment_name, test_data_path, download_path):
     client = MlflowClient()
 
+    # path where the best model will be saved which is to be promoted to production
     production_model_path = settings.PRODUCTION_MODEL_PATH
     
     best_accuracy = -1
     best_version = None
 
+    # Get the experiment ID for the specified experiment from MLflow
     experiment = client.get_experiment_by_name(experiment_name)
     if experiment is None:
         raise ValueError(f"Experiment '{experiment_name}' not found.")
@@ -264,10 +262,8 @@ def evaluate_and_promote_best_model_for_experiment(model_name, experiment_name, 
     return production_model_path
 
 def inference(test_file_path, adapter_path):
-    # test_file_path = "/home/iitb_admin_user/kalyani/dataset/test7.jsonl"
     model_size = "7b"
     device = "cuda:0"
-    # adapter_path = "/home/iitb_admin_user/kalyani/finetuned_models/checkpoint-4"
     max_length = 4096
     
     
@@ -290,7 +286,6 @@ def inference(test_file_path, adapter_path):
             test_data.update(line_data)
 
     # Now `data_dict` contains all key-value pairs from the .jsonl file
-    # print(test_data)
     model_responses = {}
     labs = list(test_data.keys())
     print(labs)
@@ -301,6 +296,7 @@ def inference(test_file_path, adapter_path):
             model_responses[lab_id][criterion_title] = {}
             prompts = details["prompts"]
             predictions = {}
+            # for test dataset with student_id as key genrate the response
             for student_id in sorted(prompts.keys()):
                 grading_prompt = prompts[student_id]
                 string_response = generate_single_response(
@@ -310,13 +306,14 @@ def inference(test_file_path, adapter_path):
                         max_length,
                         device,
                     )
+                # exatract the ratings from the response
                 response = extract_llm_ratings(string_response)
                 predictions[student_id] = response
             model_responses[lab_id][criterion_title]["predictions"] = predictions
             model_responses[lab_id][criterion_title]["original_grades"] = details["target_grades"]
             model_responses[lab_id][criterion_title]["ratings"] = details["ratings"]
             
-    # print(model_responses)
+    # metric calculation
     metrics = dpo_results_unseen_common_macro_micro(model_responses)
 
     end_time = time.time()
